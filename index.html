@@ -54,34 +54,90 @@
         var scene = null;
         var sceneToRender = null;
         var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+
+
+
         var createScene = function () {
-    // This creates a basic Babylon Scene object (non-mesh)
-    var scene = new BABYLON.Scene(engine);
+            var scene = new BABYLON.Scene(engine);
+            var anchor = new BABYLON.TransformNode("");
 
-    var camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(90), BABYLON.Tools.ToRadians(65), 10, BABYLON.Vector3.Zero(), scene);
 
-    // This attaches the camera to the canvas
-    camera.attachControl(canvas, true);
+            //var camera = new BABYLON.ArcRotateCamera("cam", -Math.PI / 2, Math.PI / 2, 10, BABYLON.Vector3((0, 5, -10)));
+            var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 0, 0), scene);
+            camera.wheelDeltaPercentage = 0.01;
+            camera.attachControl(canvas, true);
 
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+            var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            // Default intensity is 1. Let's dim the light a small amount
+            light.intensity = 0.7;
+            // Skybox
+            var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:10000.0}, scene);
+            var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+            skyboxMaterial.backFaceCulling = false;
+            skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox", scene);
+            skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+            skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+            skybox.material = skyboxMaterial;	
 
-    // Default intensity is 1. Let's dim the light a small amount
-    light.intensity = 0.7;
 
-    // Our built-in 'ground' shape.
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
-    let groundMaterial = new BABYLON.StandardMaterial("Ground Material", scene);
-    ground.material = groundMaterial;
-    let groundTexture = new BABYLON.Texture(Assets.textures.checkerboard_basecolor_png.rootUrl, scene);
-    ground.material.diffuseTexture = groundTexture;
 
-    BABYLON.SceneLoader.ImportMesh("", Assets.meshes.Yeti.rootUrl, Assets.meshes.Yeti.filename, scene, function(newMeshes){
-        newMeshes[0].scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-    });
+            
+            // // Append obj model to scene.
+            BABYLON.SceneLoader.Append("2817_open3dmodel/Center city Sci-Fi/", "Center City Sci-Fi.obj", scene, function (scene) {
+                // Create a default arc rotate camera and light.
+                // scene.createDefaultCameraOrLight(true, true, true);
+        
 
-    return scene;
-};
+                // The default camera looks at the back of the asset.
+                // Rotate the camera by 180 degrees to the front of the asset.
+                // scene.activeCamera.alpha += Math.PI;
+
+            });
+
+            // BABYLON.SceneLoader.Append("2800_open3dmodel/Damaged Downtown/", "Downtown_Damage_0.obj", scene, function (scene) {
+            //     // Create a default arc rotate camera and light.
+            //     // scene.createDefaultCameraOrLight(true, true, true);
+        
+
+            //     // The default camera looks at the back of the asset.
+            //     // Rotate the camera by 180 degrees to the front of the asset.
+            //     // scene.activeCamera.alpha += Math.PI;
+
+            // });            
+
+            camera.position = new BABYLON.Vector3(-170, 0, -650);
+            console.log(camera.position)
+
+
+
+
+            // 2D GUI --------------------------------------------------------------------------------------------
+            let advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+            let buttonPanel = new BABYLON.GUI.StackPanel();
+            buttonPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+            advancedTexture.addControl(buttonPanel);
+
+            // Setting Button
+            let settingButton = BABYLON.GUI.Button.CreateSimpleButton("","get position");
+            settingButton.width = "200px";
+            settingButton.height = "30px";
+            settingButton.color = "white";   // 文字顏色
+            settingButton.background = "grey";
+            settingButton.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            
+            buttonPanel.addControl(settingButton);
+
+            settingButton.onPointerUpObservable.add(function(){
+                console.log(camera.position);
+                
+            });                   
+                        
+            return scene;
+        
+        };
+        
                 window.initFunction = async function() {
                     
                     
